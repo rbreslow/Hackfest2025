@@ -5,8 +5,8 @@
 On the challenge provisioning page, we received an AWS access key and website URL. The website's HTML source code includes a link to an S3 bucket.
 
 ```console
-[MacBook-Pro ~] (13s)$ export AWS_PROFILE=securent            
-[MacBook-Pro ~]$ aws sts get-caller-identity            
+[MacBook-Pro ~] (13s)$ export AWS_PROFILE=securent
+[MacBook-Pro ~]$ aws sts get-caller-identity
 {
     "UserId": "AIDASECYGINV2XHRMGODQ",
     "Account": "146213847915",
@@ -28,7 +28,7 @@ On the challenge provisioning page, we received an AWS access key and website UR
 ```
 
 ```console
-[MacBook-Pro ~]$ aws s3 ls s3://y1dk85-website          
+[MacBook-Pro ~]$ aws s3 ls s3://y1dk85-website
                            PRE admin/
                            PRE restricted_content
 [MacBook-Pro ~]$ aws s3 ls s3://y1dk85-website/restricted_content/
@@ -49,12 +49,12 @@ HF-c3df32be-33a3-4ca6-8f25-5d966f0c5f31
 
 ## Flag 02
 
-We found configuration files for [Nebula: Open Source Overlay Networking](https://nebula.defined.net/docs/). Nebula looks similar to Tailscale. 
+We found configuration files for [Nebula: Open Source Overlay Networking](https://nebula.defined.net/docs/). Nebula looks similar to Tailscale.
 
 The private key appears to be in the `operator` group:
 
 ```console
-[MacBook-Pro nebula]$ nebula-cert print -path operator.crt 
+[MacBook-Pro nebula]$ nebula-cert print -path operator.crt
 NebulaCertificate {
 	Details {
 		Name: operator
@@ -88,7 +88,13 @@ INFO[0765] Handshake message received                    certName=home-pc durati
 - `dev-pc` - 10.13.37.12
 - `vault-pc` - 10.13.37.13
 
-We connect to the HTTP service in `home-pc,` which is a file server, and can get an SSH key we use to log in. From there, `.bash_history` shows the updated `root` user password, which is `WZnKEUBE1G`.
+We connect to the HTTP service in `home-pc,` which is a file server, and can get an SSH key we use to log in. 
+
+```console
+ssh -i id_rsa ubuntu@10.13.37.2
+```
+
+From there, `.bash_history` shows the updated `root` user password, which is `WZnKEUBE1G`.
 
 `su root` and find the flag in the home directory.
 
@@ -99,7 +105,7 @@ We connect to the HTTP service in `home-pc,` which is a file server, and can get
 We never found Flag 03. We discovered that `home-pc` was running Nebula with a different user group that had network access to `dev-pc`:
 
 ```console
-[MacBook-Pro home-pc-nebula]$ nebula-cert print -path host.crt         
+[MacBook-Pro home-pc-nebula]$ nebula-cert print -path host.crt
 NebulaCertificate {
 	Details {
 		Name: home-pc
