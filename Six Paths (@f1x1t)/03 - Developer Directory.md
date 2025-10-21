@@ -4,6 +4,6 @@ Logging in as Bob we have two options: "My Portfolio" and "Developer Directory".
 
 ![](images/developer_directory.png)
 
-Since there we're no login for Alice we assume she must have the flag.
+Since there was no login for Alice we assume she must have the flag.
 
 The "My Portfolio" page for bob does not show much. But we notice the URL is https://f1x1t-wcd1.challenges.hfctf.ca/user/bob. Replacing `bob` with `alice` opens Alice's page which contains the flag `HF{wcd_ba$1c_$uccess}`.
