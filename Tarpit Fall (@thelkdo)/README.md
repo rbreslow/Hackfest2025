@@ -3,13 +3,13 @@ By @thelkdo
 
 In this challenge you were provided a system with Guntar installed. Exploring around, no flag can be found. We assume it must be in the inaccesible `/root` directory.
 
-By checking the system we find that guntar has SETUID.
+By exploring the system we find that guntar has SETUID.
 
 Exploring guntar, it has features to explore and extract tar-files. Because of the SETUID bit, all files extracted will be written as root.
 
-By creating a malicious-tar file with path traversal, it is possible to make guntar write a file anywhere as root. Since we're connected to the machine over SSH, lets inject a `authorized_keys` file into roots `.ssh` folder. 
+By creating a malicious-tar file with path traversal, it is possible to make guntar write a file anywhere as root. Since we're connected to the machine over SSH, let's inject a `authorized_keys` file into root's `.ssh` folder. 
 
-I had ChatGPT write this python script to create the malicious tar-file. We know from the hint Guntar gives when it starts that "All parent directories must be explicitly included in the archive".
+I had ChatGPT write this python script to create the malicious tar-file. We know from the hint Guntar gives when it starts that "All parent directories must be explicitly included in the archive", so we must ensure to include that.
 
 ```python
 #!/usr/bin/env python
@@ -140,7 +140,7 @@ Reading it again outputs `060e010107550601085c0101060303520600080d01030602030306
 
 Again outputs `01060601060106060006010106030604030400550103060206010305000601010603065603010551010606060601030200060106060306060304005101030605060103050006010006030656030405540106060606010300000601060603060703040051010606040601030500060103060306560304055301060603060103070006010606030603030400560106030106010300000601050603030103040554010606060601030700060103060306030304005601060601060103000006010406030301030405510106060606010300000601060603060003040056010306010601030000060102060303010304055601060606060106050006010306030603030400560106060006010305000601060603065603010551`
 
-It gets double as long every time I read the file. From `ps aux` it shows a `flag-defender` process runnning. Killing it stops mutating the `flag.txt` file. So me must look into whatever it does. Downloading the file and disassembling it through IDA reveals a Go binary. Luckily it has some debug symbols included to funciton-names are still visible.
+It gets double as long every time I read the file. From `ps aux` it shows a `flag-defender` process runnning. Killing it stops mutating the `flag.txt` file. So me must look into whatever it does. Downloading the file and disassembling it reveals a Go binary. Luckily it has some debug symbols included to funciton-names are still visible.
 
 The program seems to encrypt the file on startup and then once again each time the file is read. It isn't entirely clear what it uses to encrypt, but it's clear the program makes a syscall to get the current time each time it encrypts. So we can assume the encryption key is the current timestamp.
 
