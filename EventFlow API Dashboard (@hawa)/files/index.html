@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Dashboard - Event Management System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .api-card {
+            background: #f8f9ff;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .api-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .debug-info {
+            background: #d1ecf1;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            font-size: 13px;
+            display: none;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #5a6fd8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 API Dashboard</h1>
+            <p>Event Management API Control Center - v2.1.3</p>
+        </div>
+        
+        <h2>📡 Available API Endpoints</h2>
+        <div class="api-card" onclick="testAPI('events')">
+            <h3>Events API v2.1</h3>
+            <p>🟢 Status: Operational | 📊 Uptime: 99.8%</p>
+            <p><strong>Endpoint:</strong> /api/v2/events</p>
+            <p>Click to test this endpoint</p>
+        </div>
+        
+        <div class="api-card" onclick="testAPI('users')">
+            <h3>Users API v1.8</h3>
+            <p>🟡 Status: Degraded | 📊 Uptime: 97.2%</p>
+            <p><strong>Endpoint:</strong> /api/v1/users</p>
+            <p>Click to test this endpoint</p>
+        </div>
+        
+        <div class="api-card" onclick="testAPI('analytics')">
+            <h3>Analytics API v3.0</h3>
+            <p>🟢 Status: Operational | 📊 Uptime: 99.9%</p>
+            <p><strong>Endpoint:</strong> /api/v3/analytics</p>
+            <p>Click to test this endpoint</p>
+        </div>
+
+        <div class="debug-info" id="debugInfo">
+            <strong>🐛 DEBUG MODE ACTIVATED</strong><br>
+            Additional endpoints detected in network traces:<br>
+            <em>Try to discover internal API paths...</em><br>
+            <br>
+            <input type="text" id="endpointInput" placeholder="Enter endpoint (e.g., internal)" style="padding: 5px; margin: 5px;">
+            <button onclick="tryEndpoint()">Test Endpoint</button>
+            <br>
+            <small>Hint: Look for clues in API responses and source code comments</small>
+        </div>
+        
+        <div class="footer">
+            <p>API Dashboard v2.1.3 - © 2024 TechCorp API Services</p>
+            <p style="font-size: 10px;">Build: 20240305 | Status: Production Ready</p>
+            <!-- Dev note: Remember to clean up internal endpoints: /internal, /debug, /admin -->
+            <!-- Access keys stored in: config.internal_key=dev123, debug.access_token=test456 -->
+        </div>
+    </div>
+
+    <script>
+        var foundEndpoints = [];
+
+        function rot13(str) {
+            return str.replace(/[A-Za-z]/g, function(char) {
+                var start = char <= 'Z' ? 65 : 97;
+                return String.fromCharCode(((char.charCodeAt(0) - start + 13) % 26) + start);
+            });
+        }
+
+        function encodeFragment(text) {
+            return btoa(rot13(text));
+        }
+
+        function decodeChars(codes) {
+            var result = '';
+            for(var i = 0; i < codes.length; i++) {
+                result += String.fromCharCode(codes[i]);
+            }
+            return result;
+        }
+
+        function getF1() {
+            return encodeFragment(decodeChars([104,49,100,100,51,110,95]));
+        }
+
+        function getF2() {
+            return encodeFragment(decodeChars([52,112,49,95]));
+        }
+
+        function getF3() {
+            return encodeFragment(decodeChars([51,110,100,112,48,49,110,116,53,95]));
+        }
+
+        function getF4() {
+            return encodeFragment(decodeChars([102,48,117,110,100]));
+        }
+
+        function testAPI(endpoint) {
+            if (endpoint === 'events') {
+                alert('API Response from /events:\n\nStatus: 200\n\nData:\n{\n  "events": [\n    {"id": 1, "name": "Tech Conference", "date": "2024-03-15"},\n    {"id": 2, "name": "AI Workshop", "date": "2024-03-22"},\n    {"id": 3, "name": "Startup Meetup", "date": "2024-03-30"}\n  ],\n  "total": 3,\n  "debug_hint": "Some APIs require special access keys"\n}');
+            } else if (endpoint === 'users') {
+                alert('API Response from /users:\n\nStatus: 503\n\nError: Service temporarily unavailable\n\nDebug info: Check /internal endpoints for user management\nNote: Internal systems accessible via debug mode');
+            } else if (endpoint === 'analytics') {
+                alert('API Response from /analytics:\n\nStatus: 200\n\nData:\n{\n  "total_requests": 2847291,\n  "active_users": 1337,\n  "uptime": "99.9%",\n  "internal_note": "Advanced analytics available at /debug endpoint"\n}');
+            }
+        }
+
+        function tryEndpoint() {
+            var endpoint = document.getElementById('endpointInput').value.toLowerCase().trim();
+            
+            if (!endpoint) {
+                alert('Please enter an endpoint name');
+                return;
+            }
+
+            if (endpoint === 'internal') {
+                testInternalAPI();
+            } else if (endpoint === 'debug') {
+                testDebugAPI();
+            } else if (endpoint === 'admin') {
+                testAdminAPI();
+            } else {
+                alert('API Response:\n\nStatus: 404\n\nError: Endpoint not found\n\nTry: internal, debug, or admin');
+            }
+        }
+
+        function testInternalAPI() {
+            var params = new URLSearchParams(window.location.search);
+            if (params.get('internal_key') !== 'dev123') {
+                alert('API Response from /internal:\n\nStatus: 401\n\nError: Access denied\n\nHint: This endpoint requires an internal_key parameter\nCheck source comments for key values');
+                return;
+            }
+
+            var frag = getF1();
+            var msg = 'API Response from /internal:\n\nStatus: 200\n\nData:\n{\n  "config": "internal_config_loaded",\n  "fragment_1": "' + frag + '",\n  "encoding": "base64+rot13",\n  "note": "Fragment 1 of 4 found"\n}\n\nFRAGMENT 1: ' + frag;
+            
+            if (!foundEndpoints.includes('internal')) {
+                foundEndpoints.push('internal');
+                msg += '\n\n🎉 NEW FRAGMENT COLLECTED!';
+            } else {
+                msg += '\n\n♻️ Fragment 1 retrieved again.';
+            }
+            
+            alert(msg);
+        }
+
+        function testDebugAPI() {
+            var params = new URLSearchParams(window.location.search);
+            if (params.get('access_token') !== 'test456') {
+                alert('API Response from /debug:\n\nStatus: 401\n\nError: Invalid access token\n\nHint: This endpoint requires an access_token parameter\nCheck source comments for token values');
+                return;
+            }
+
+            var frag = getF2();
+            var msg = 'API Response from /debug:\n\nStatus: 200\n\nData:\n{\n  "debug_mode": true,\n  "system_info": "debug_active",\n  "fragment_2": "' + frag + '",\n  "encoding": "base64+rot13",\n  "note": "Fragment 2 of 4 found"\n}\n\nFRAGMENT 2: ' + frag;
+            
+            if (!foundEndpoints.includes('debug')) {
+                foundEndpoints.push('debug');
+                msg += '\n\n🎉 NEW FRAGMENT COLLECTED!';
+            } else {
+                msg += '\n\n♻️ Fragment 2 retrieved again.';
+            }
+            
+            alert(msg);
+        }
+
+        function testAdminAPI() {
+            var params = new URLSearchParams(window.location.search);
+            if (params.get('internal_key') !== 'dev123' || params.get('access_token') !== 'test456') {
+                alert('API Response from /admin:\n\nStatus: 403\n\nError: Insufficient privileges\n\nHint: This endpoint requires BOTH internal_key AND access_token parameters\nBoth must be present in the URL');
+                return;
+            }
+
+            var frag3 = getF3();
+            var frag4 = getF4();
+            var msg = 'API Response from /admin:\n\nStatus: 200\n\nData:\n{\n  "admin_panel": "accessible",\n  "permissions": ["read", "write", "debug"],\n  "fragment_3": "' + frag3 + '",\n  "fragment_4": "' + frag4 + '",\n  "encoding": "base64+rot13",\n  "note": "Fragments 3 and 4 found - Final pieces!"\n}\n\nFRAGMENT 3: ' + frag3 + '\nFRAGMENT 4: ' + frag4;
+            
+            if (!foundEndpoints.includes('admin')) {
+                foundEndpoints.push('admin');
+                msg += '\n\n🎉 NEW FRAGMENTS COLLECTED!\nDecode all 4 fragments and add HF-{} around the result for the final flag!';
+            } else {
+                msg += '\n\n♻️ Fragments 3 & 4 retrieved again.\nRemember: decode all fragments, then wrap in HF-{} for the final flag!';
+            }
+            
+            alert(msg);
+        }
+
+        function activateDebug() {
+            document.getElementById('debugInfo').style.display = 'block';
+        }
+
+        window.onload = function() {
+            var url = window.location.search;
+            if (url.indexOf('debug=true') >= 0) {
+                activateDebug();
+            }
+        };
+    </script>
+</body>
+</html>
