@@ -33,7 +33,7 @@ Date:   Sun Oct 12 22:18:49 2025 -0400
 
 This commit contained a file called `encrypted_sa.txt` which contained a JSON object with AES256 encrypted data and a line deleted from the README that said:
 
-```diff
+````diff
 diff --git a/README.md b/README.md
 index 3f81449..8d83b84 100644
 --- a/README.md
@@ -46,7 +46,7 @@ index 3f81449..8d83b84 100644
 +--> Deleting unsecure comments done by @Jonathan Lee
 
  ### 📋 Prerequisites
-```
+````
 
 There's a Python file in the repo called `decryptJSON.py` that then returns unencrypted Google Cloud Platform (GCP) service account JSON credentials for the user `initial-sa@aisaas-project-474522.iam.gserviceaccount.com`.
 
