@@ -1,3 +1,0 @@
-# TarPit Fall
-By ___ ?
-
